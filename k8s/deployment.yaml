@@ -1,0 +1,66 @@
+# TODO: Create Kubernetes configuration files for the application deployment and service.
+#     Deployment Configuration: Create a 'deployment.yaml' file.
+#    - Define the necessary specifications, including the number of replicas, selector matchLabels, and template spec (such as the container image to use, environment variables, and resources).
+#    - Ensure the deployment strategy is defined to manage updates and rollbacks effectively (consider using RollingUpdate).
+#    - Include configuration for readiness and liveness probes to ensure the Kubernetes system properly manages the application instances' lifecycles.
+#    - Specify any volume mounts if the application needs specific storage resources.
+#
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: scraper-deployment
+spec:
+  replicas: 3 # Number of desired replicas
+  selector:
+    matchLabels:
+      app: scraper
+  template:
+    metadata:
+      labels:
+        app: scraper
+    spec:
+      containers:
+        - name: scraper-container
+          image: scraper-container-image:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: DB_HOST
+              value: postgres
+            - name: DB_HOST
+              value: localhost
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USERNAME
+              value: your_username
+            - name: DB_PASSWORD
+              value: your_password
+            - name: DB_NAME
+              value: scraper
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+      # Add additional containers if needed
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  # Add volume mounts if needed
